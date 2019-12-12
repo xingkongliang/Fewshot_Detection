@@ -321,6 +321,6 @@ if evaluate:
     logging('evaluating ...')
     test(0)
 else:
-    for epoch in range(init_epoch, max_epochs):
+    for epoch in range(init_epoch, int(max_epochs)):
         train(epoch)
         # test(epoch)

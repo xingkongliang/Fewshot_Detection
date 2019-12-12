@@ -1,2 +1,2 @@
-/scratch/bykang/datasets/VOCdevkit/VOC2007/JPEGImages/003614.jpg
-/scratch/bykang/datasets/VOCdevkit/VOC2012/JPEGImages/2009_001208.jpg
+/media/tianliang/Cloud/PyTorch_Projects/Fewshot_Detection/voc_data/VOCdevkit/VOC2007/JPEGImages/003614.jpg
+/media/tianliang/Cloud/PyTorch_Projects/Fewshot_Detection/voc_data/VOCdevkit/VOC2012/JPEGImages/2009_001208.jpg

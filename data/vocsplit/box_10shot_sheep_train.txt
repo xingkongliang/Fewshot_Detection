@@ -1,6 +1,6 @@
-/scratch/bykang/datasets/VOCdevkit/VOC2007/JPEGImages/006679.jpg
-/scratch/bykang/datasets/VOCdevkit/VOC2012/JPEGImages/2010_000189.jpg
-/scratch/bykang/datasets/VOCdevkit/VOC2012/JPEGImages/2008_000084.jpg
-/scratch/bykang/datasets/VOCdevkit/VOC2012/JPEGImages/2010_000117.jpg
-/scratch/bykang/datasets/VOCdevkit/VOC2012/JPEGImages/2010_004659.jpg
-/scratch/bykang/datasets/VOCdevkit/VOC2012/JPEGImages/2008_007245.jpg
+/media/tianliang/Cloud/PyTorch_Projects/Fewshot_Detection/voc_data/VOCdevkit/VOC2007/JPEGImages/006679.jpg
+/media/tianliang/Cloud/PyTorch_Projects/Fewshot_Detection/voc_data/VOCdevkit/VOC2012/JPEGImages/2010_000189.jpg
+/media/tianliang/Cloud/PyTorch_Projects/Fewshot_Detection/voc_data/VOCdevkit/VOC2012/JPEGImages/2008_000084.jpg
+/media/tianliang/Cloud/PyTorch_Projects/Fewshot_Detection/voc_data/VOCdevkit/VOC2012/JPEGImages/2010_000117.jpg
+/media/tianliang/Cloud/PyTorch_Projects/Fewshot_Detection/voc_data/VOCdevkit/VOC2012/JPEGImages/2010_004659.jpg
+/media/tianliang/Cloud/PyTorch_Projects/Fewshot_Detection/voc_data/VOCdevkit/VOC2012/JPEGImages/2008_007245.jpg
