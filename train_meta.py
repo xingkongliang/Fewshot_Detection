@@ -103,25 +103,25 @@ print(cfg.repeat, nsamples, max_batches, batch_size)
 print(num_workers)
 
 kwargs = {'num_workers': num_workers, 'pin_memory': True} if use_cuda else {}
-test_loader = torch.utils.data.DataLoader(
-    dataset.listDataset(testlist, shape=(init_width, init_height),
-                   shuffle=False,
-                   transform=transforms.Compose([
-                       transforms.ToTensor(),
-                   ]), train=False),
-    batch_size=batch_size, shuffle=False, **kwargs)
-
-test_metaset = dataset.MetaDataset(metafiles=metadict, train=True)
-test_metaloader = torch.utils.data.DataLoader(
-    test_metaset,
-    batch_size=test_metaset.batch_size,
-    shuffle=False,
-    num_workers=num_workers//2,
-    pin_memory=True
-)
+# test_loader = torch.utils.data.DataLoader(
+#     dataset.listDataset(testlist, shape=(init_width, init_height),
+#                    shuffle=False,
+#                    transform=transforms.Compose([
+#                        transforms.ToTensor(),
+#                    ]), train=False),
+#     batch_size=batch_size, shuffle=False, **kwargs)
+#
+# test_metaset = dataset.MetaDataset(metafiles=metadict, train=True)
+# test_metaloader = torch.utils.data.DataLoader(
+#     test_metaset,
+#     batch_size=test_metaset.batch_size,
+#     shuffle=False,
+#     num_workers=num_workers//2,
+#     pin_memory=True
+# )
 
 # Adjust learning rate
-factor = len(test_metaset.classes)
+# factor = len(test_metaset.classes)
 if cfg.neg_ratio == 'full':
     factor = 15.
 elif cfg.neg_ratio == 1:
@@ -190,7 +190,7 @@ def train(epoch):
         num_workers=num_workers,
         pin_memory=True
     )
-    metaloader = iter(metaloader)
+    batch_iterator = iter(metaloader)
 
     lr = adjust_learning_rate(optimizer, processed_batches)
     logging('epoch %d/%d, processed %d samples, lr %f' % (epoch, max_epochs, epoch * len(train_loader.dataset), lr))
@@ -199,7 +199,7 @@ def train(epoch):
     t1 = time.time()
     avg_time = torch.zeros(9)
     for batch_idx, (data, target) in enumerate(train_loader):
-        metax, mask = metaloader.next()
+        metax, mask = batch_iterator.next()
         t2 = time.time()
         adjust_learning_rate(optimizer, processed_batches)
         processed_batches = processed_batches + 1

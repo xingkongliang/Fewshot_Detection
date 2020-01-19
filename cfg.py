@@ -405,6 +405,8 @@ def print_cfg(blocks):
             else:
                 raise NotImplementedError()
             out_filters.append(prev_filters)
+        elif block['type'] == 'dynamic_routing':
+            print('%5d %-6s ' % (ind, 'dynamic_routing'))
         else:
             print('unknown type %s' % (block['type']))
 
@@ -413,7 +415,12 @@ def load_conv(buf, start, conv_model):
     if conv_model.bias is not None:
         num_b = conv_model.bias.numel()
         conv_model.bias.data.copy_(torch.from_numpy(buf[start:start+num_b]));   start = start + num_b
-    conv_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_w])); start = start + num_w
+    # conv_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_w])); start = start + num_w
+    conv_model.weight.data.copy_(torch.reshape(torch.from_numpy(buf[start:start+num_w]),
+                                               (conv_model.weight.shape[0],
+                                                conv_model.weight.shape[1],
+                                                conv_model.weight.shape[2],
+                                                conv_model.weight.shape[3]))); start=start + num_w # for pytorch==1.1.0
     return start
 
 def load_convfromcoco(buf, start, conv_model):
@@ -476,12 +483,16 @@ def load_fc(buf, start, fc_model):
     num_w = fc_model.weight.numel()
     num_b = fc_model.bias.numel()
     fc_model.bias.data.copy_(torch.from_numpy(buf[start:start+num_b]));     start = start + num_b
-    fc_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_w]));   start = start + num_w 
+    fc_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_w].reshape(fc_model.weight.data.size())));   start = start + num_w
     return start
 
 def save_fc(fp, fc_model):
-    fc_model.bias.data.numpy().tofile(fp)
-    fc_model.weight.data.numpy().tofile(fp)
+    if fc_model.bias.is_cuda:
+        convert2cpu(fc_model.bias.data).numpy().tofile(fp)
+        convert2cpu(fc_model.weight.data).numpy().tofile(fp)
+    else:
+        fc_model.bias.data.numpy().tofile(fp)
+        fc_model.weight.data.numpy().tofile(fp)
 
 if __name__ == '__main__':
     import sys

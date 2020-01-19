@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 import numpy as np
 from region_loss import RegionLossV2
 from cfg import *
@@ -81,6 +82,47 @@ class EmptyModule(nn.Module):
 
     def forward(self, x):
         return x
+
+
+class DynamicRouting(nn.Module):
+    def __init__(self):
+        super(DynamicRouting, self).__init__()
+        self.num_iterations = 3
+        in_channels = 1024
+        out_channels = 1024
+        self.fc = nn.Linear(in_channels, out_channels)
+        # self.route_weights = nn.Parameter(torch.randn(1, 1, in_channels, out_channels))
+
+    def squash(self, tensor, dim=-1):
+        squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
+        scale = squared_norm / (1 + squared_norm)
+        return scale * tensor / torch.sqrt(squared_norm)
+
+    def softmax(self, input, dim=1):
+        transposed_input = input.transpose(dim, len(input.size()) - 1)
+        softmaxed_output = F.softmax(transposed_input.contiguous().view(-1, transposed_input.size(-1)), dim=-1)
+        return softmaxed_output.view(*transposed_input.size()).transpose(dim, len(input.size()) - 1)
+
+    def forward(self, x):
+        # print("DynamicRouting")
+        num_class = x.size(0)
+        num_d = x.size(1)
+        x = x.view(num_class, num_d, -1)
+        num_k = x.size(2)
+        x = torch.transpose(x, 1, 2)
+        priors = self.fc(x)
+
+        logits = Variable(torch.zeros(num_class, num_k)).cuda()
+        for i in range(self.num_iterations):
+            probs = self.softmax(logits, dim=1)
+            outputs = self.squash((probs[:, :, None] * priors).sum(dim=1, keepdim=True))
+
+            if i != self.num_iterations - 1:
+                delta_logits = (priors * outputs).sum(dim=2)
+                logits = logits + delta_logits
+        outputs = outputs.view(num_class, num_d, 1, 1)
+        return outputs
+
 
 # support route shortcut and reorg
 class Darknet(nn.Module):
@@ -347,6 +389,10 @@ class Darknet(nn.Module):
                 prev_filters = splits[-1]
                 out_filters.append(prev_filters)
                 models.append(model)
+            elif block['type'] == 'dynamic_routing':
+                model = DynamicRouting()
+                out_filters.append(prev_filters)
+                models.append(model)
             else:
                 print('unknown type %s' % (block['type']))
     
@@ -408,6 +454,9 @@ class Darknet(nn.Module):
                     pass
                 elif block['type'] == 'split':
                     pass
+                elif block['type'] == 'dynamic_routing':
+                    model = models[ind]
+                    start = load_fc(buf, start, model.fc)
                 else:
                     print('unknown type %s' % (block['type']))
 
@@ -475,6 +524,9 @@ class Darknet(nn.Module):
                 pass
             elif block['type'] == 'split':
                 pass
+            elif block['type'] == 'dynamic_routing':
+                model = models[ind]
+                save_fc(fp, model.fc)
             else:
                 print('unknown type %s' % (block['type']))
         fp.close()
